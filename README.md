@@ -13,6 +13,7 @@ Backtest trading strategies with Python.
 Installation
 ------------
 
+    $ gitclone https://github.com/chancsc/backtesting.py.git
     $ pip install yfinance
     $ pip install pandas, seaborn
 
