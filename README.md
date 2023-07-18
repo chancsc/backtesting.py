@@ -2,15 +2,10 @@
 
 Backtesting.py
 ==============
-[![Build Status](https://img.shields.io/github/actions/workflow/status/kernc/backtesting.py/ci.yml?branch=master&style=for-the-badge)](https://github.com/kernc/backtesting.py/actions)
-[![Code Coverage](https://img.shields.io/codecov/c/gh/kernc/backtesting.py.svg?style=for-the-badge)](https://codecov.io/gh/kernc/backtesting.py)
-[![Backtesting on PyPI](https://img.shields.io/pypi/v/backtesting.svg?color=blue&style=for-the-badge)](https://pypi.org/project/backtesting)
-[![PyPI downloads](https://img.shields.io/pypi/dd/backtesting.svg?color=skyblue&style=for-the-badge)](https://pypi.org/project/backtesting)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/kernc?color=pink&style=for-the-badge)](https://github.com/sponsors/kernc)
 
 Backtest trading strategies with Python.
 
-[**Project website**](https://kernc.github.io/backtesting.py) + [Documentation]
+[**Original Project website**](https://kernc.github.io/backtesting.py) + [Documentation]
 
 [Documentation]: https://kernc.github.io/backtesting.py/doc/backtesting/
 
@@ -18,10 +13,23 @@ Backtest trading strategies with Python.
 Installation
 ------------
 
-    $ pip install backtesting
+    $ pip install yfinance
 
 
-Usage
+To start
+--------
+1. Generate the data file needed (csv file):
+
+    Navigate to the folder:
+    $ cd backtesting.py\backtesting\test
+    python gen_stock_csv.py --stock=TSLA --sdate=01/01/2020 --edate=15/07/2023
+
+2. Call the program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
+    
+   python testsc.py MSFT
+
+
+Usage (from orginal author)
 -----
 ```python
 from backtesting import Backtest, Strategy
