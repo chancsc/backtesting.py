@@ -14,6 +14,7 @@ Installation
 ------------
 
     $ pip install yfinance
+    $ pip install pandas, seaborn
 
 
 To start
