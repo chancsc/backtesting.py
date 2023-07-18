@@ -2,17 +2,19 @@
 import pandas as pd
 
 
-def _read_file(filename):
+def _read_file(stock_symbol):
     from os.path import dirname, join
 
+    filename = f"{stock_symbol}.csv"
     return pd.read_csv(join(dirname(__file__), filename),
                        index_col=0, parse_dates=True, infer_datetime_format=True)
 
 
-GOOG = _read_file('GOOG.csv')
-"""DataFrame of daily NASDAQ:GOOG (Google/Alphabet) stock price data from 2004 to 2013."""
+# Example usage: Pass the stock symbol when calling the function
+#stockTicker = _read_file('MSFT')
+"""DataFrame of daily NASDAQ:TSLA (Tesla) stock price data from 2004 to 2013."""
 
-EURUSD = _read_file('EURUSD.csv')
+#EURUSD = _read_file('EURUSD')
 """DataFrame of hourly EUR/USD forex data from April 2017 to February 2018."""
 
 
