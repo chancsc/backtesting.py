@@ -13,7 +13,7 @@ import pandas as pd
 from bokeh.colors import RGB
 from bokeh.colors.named import (
     lime as BULL_COLOR,
-    tomato as BEAR_COLOR
+    orangered as BEAR_COLOR
 )
 from bokeh.plotting import figure as _figure
 from bokeh.models import (  # type: ignore
@@ -178,7 +178,7 @@ def plot(*, results: pd.Series,
     # plot() contain some previous run's cruft data (was noticed when
     # TestPlot.test_file_size() test was failing).
     if not filename and not IS_JUPYTER_NOTEBOOK:
-        filename = _windos_safe_filename(str(results._strategy))
+        filename = _windos_safe_filename(f"{filename}_{str(results._strategy)}")
     _bokeh_reset(filename)
 
     COLORS = [BEAR_COLOR, BULL_COLOR]
