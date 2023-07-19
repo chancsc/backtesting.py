@@ -20,16 +20,9 @@ Installation
 
 To start
 --------
-1. Generate the data file needed (csv file):
-
-    Navigate to the folder:
-       
-    $ cd backtesting.py\backtesting\test
-    python gen_stock_csv.py --stock=TSLA --sdate=01/01/2020 --edate=15/07/2023
-
-3. Call the program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
+1. Call the program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
     
-   python testsc.py MSFT
+   python show_chart.py MSFT
 
 
 Usage (from orginal author)
