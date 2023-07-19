@@ -3,6 +3,7 @@
 # Example usage:
 # generate_stock_data('TSLA')
 
+
 import os
 import yfinance as yf
 import pandas as pd
@@ -24,28 +25,26 @@ def generate_stock_data(symbol, start_date=None, end_date=None):
     if not os.path.exists(sub_directory):
         os.makedirs(sub_directory)
 
-    # Delete existing CSV file if it exists and its date is older than today
+    # Check if the CSV file exists or its date is older than today
     csv_file = os.path.join(sub_directory, f'{symbol}.csv')
-    if os.path.exists(csv_file):
-        file_modified_date = datetime.fromtimestamp(os.path.getmtime(csv_file)).date()
-        today = date.today()
-        if file_modified_date < today:
+    if not os.path.exists(csv_file) or datetime.fromtimestamp(os.path.getmtime(csv_file)).date() < date.today():
+        if os.path.exists(csv_file):
             os.remove(csv_file)
             print('Existing CSV file deleted.')
 
-            # Download stock data
-            data = yf.download(symbol, start=start_date, end=end_date)
-            # Select required columns
-            data = data[['Open', 'High', 'Low', 'Close', 'Volume']]
-            # Reset index
-            data.reset_index(inplace=True)
-            # Save data to CSV
-            data.to_csv(csv_file, index=False)
+        # Download stock data
+        data = yf.download(symbol, start=start_date, end=end_date)
+        # Select required columns
+        data = data[['Open', 'High', 'Low', 'Close', 'Volume']]
+        # Reset index
+        data.reset_index(inplace=True)
+        # Save data to CSV
+        data.to_csv(csv_file, index=False)
 
-            print('Data downloaded successfully.')
+        print('Data downloaded successfully.')
+    else:
+        print('CSV file is up to date.')
 
 
 # Generate stock data with default parameters
 #generate_stock_data('TSLA')
-
-
