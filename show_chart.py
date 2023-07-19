@@ -35,4 +35,4 @@ class SmaCross(Strategy):
 
 bt = Backtest(stockTicker, SmaCross, commission=.002, exclusive_orders=True)
 stats = bt.run()
-bt.plot()
+bt.plot(filename=stockSymbol)
