@@ -4,8 +4,9 @@ import sys
 from backtesting import Backtest, Strategy
 from backtesting.test.__init__ import _read_file
 from backtesting.lib import crossover
-
 from backtesting.test.__init__ import SMA
+
+from stock_data_generator import generate_stock_data
 
 # Check if the stockSymbol is provided as a command-line argument
 if len(sys.argv) < 2:
@@ -13,6 +14,10 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 stockSymbol = sys.argv[1]
+
+# Example usage:
+generate_stock_data(stockSymbol)
+
 # Use the stock symbol to load the corresponding stock data
 stockTicker = _read_file(stockSymbol)  # Replace `_read_file` with the actual function to load stock data
 
