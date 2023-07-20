@@ -24,6 +24,7 @@ To start
 
 Note: 
 Triagle Up --> Long, Trigagle Down --> Short
+
 10 days MA above 20 days MA --> Bullish
 
     ```python
