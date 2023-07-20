@@ -21,7 +21,8 @@ Installation
 To start
 --------
 1. Call the most basic program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
-Note: Green as Bull, Red as Bear color
+
+Note: Triagle Up --> Long, Trigagle Down --> Short
 
     ```python
     python show_chart.py MSFT
