@@ -22,17 +22,16 @@ To start
 --------
 1. Call the most basic program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
 
+```python
+python show_chart.py MSFT
+```
+
 Note:
 -----
 
 Triagle Up --> Long, Trigagle Down --> Short
 
 10 days MA above 20 days MA --> Bullish
-
-```python
-python show_chart.py MSFT
-```
-
 
 
 2. Read this [user guide](https://github.com/chancsc/backtesting.py/blob/master/doc/examples/Quick%20Start%20User%20Guide.ipynb) for more details usage
