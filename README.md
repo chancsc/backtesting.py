@@ -22,7 +22,9 @@ To start
 --------
 1. Call the most basic program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
 
-Note: Triagle Up --> Long, Trigagle Down --> Short
+Note: 
+Triagle Up --> Long, Trigagle Down --> Short
+10 days MA above 20 days MA --> Bullish
 
     ```python
     python show_chart.py MSFT
