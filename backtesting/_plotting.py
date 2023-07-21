@@ -10,8 +10,9 @@ from typing import Callable, List, Union
 import numpy as np
 import pandas as pd
 
-from tabulate import tabulate
-
+from tabulate import tabulate   # for formatting data in console
+import requests # for sending telegram
+import json # for loading of config file
 
 from bokeh.colors import RGB
 from bokeh.colors.named import (
@@ -243,10 +244,10 @@ def plot(*, results: pd.Series,
 
     data = {
         "Size": trades.get("Size", ""),
-        "Entry Price": trades.get("EntryPrice", ""),
-        "Exit Price": trades.get("ExitPrice", ""),
         "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
-        "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else ""
+        "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
+        "Entry Price": trades.get("EntryPrice", ""),
+        "Exit Price": trades.get("ExitPrice", "")
     }
 
     # Format the float values to two decimal places (if applicable)
@@ -255,6 +256,39 @@ def plot(*, results: pd.Series,
             data[key] = "{:.2f}".format(value)
 
     print(tabulate(data, headers='keys', tablefmt='grid'))
+
+    # start telegram
+    # Check if the last entry time equals the exit time
+    if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
+
+        # Export the table to a file
+        print("Export the table to a file")
+        with open(f"{filename}.txt", 'w') as file:
+            file.write(tabulate(data, headers='keys', tablefmt='grid'))
+
+        print("Sending Telegram message...")
+
+        # Load the configuration from the JSON file
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+
+        bot_token = config["bot_token"]
+        chat_id = config["chat_id"]
+        ttext = "Stock trend alert"
+        url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
+
+        with open(f"{filename}.txt", 'rb') as file:
+            files = {"document": file}
+            data = {"chat_id": chat_id, "caption": ttext}
+            response = requests.post(url, files=files, data=data)
+
+        # Check the Telegram API response status
+        if response.status_code == 200:
+            print("Table sent to Telegram successfully.")
+        else:
+            print("Failed to send the table to Telegram. Status code:", response.status_code)
+    # end telegram
+
 
     inc_cmap = factor_cmap('inc', COLORS, ['0', '1'])
     cmap = factor_cmap('returns_positive', COLORS, ['0', '1'])
@@ -715,7 +749,9 @@ return this.labels[index] || "";
         merge_tools=True,
         **kwargs  # type: ignore
     )
+
     show(fig, browser=None if open_browser else 'none')
+
     return fig
 
 
