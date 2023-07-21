@@ -10,6 +10,9 @@ from typing import Callable, List, Union
 import numpy as np
 import pandas as pd
 
+from tabulate import tabulate
+
+
 from bokeh.colors import RGB
 from bokeh.colors.named import (
     lime as BULL_COLOR,
@@ -238,6 +241,21 @@ def plot(*, results: pd.Series,
         returns_positive=(trades['ReturnPct'] > 0).astype(int).astype(str),
     ))
 
+    data = {
+        "Size": trades.get("Size", ""),
+        "Entry Price": trades.get("EntryPrice", ""),
+        "Exit Price": trades.get("ExitPrice", ""),
+        "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
+        "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else ""
+    }
+
+    # Format the float values to two decimal places (if applicable)
+    for key, value in data.items():
+        if isinstance(value, float):
+            data[key] = "{:.2f}".format(value)
+
+    print(tabulate(data, headers='keys', tablefmt='grid'))
+
     inc_cmap = factor_cmap('inc', COLORS, ['0', '1'])
     cmap = factor_cmap('returns_positive', COLORS, ['0', '1'])
     colors_darker = [lightness(BEAR_COLOR, .35),
@@ -398,31 +416,62 @@ return this.labels[index] || "";
         return fig
 
     def _plot_pl_section():
-        """Profit/Loss markers section"""
+        """
+        This function generates a plot showing profit/loss markers.
+
+        Returns:
+            fig (Figure): The generated plot figure.
+        """
+
+        # Create a new figure for the plot with the y-axis labeled as "Profit / Loss"
         fig = new_indicator_figure(y_axis_label="Profit / Loss")
+
+        # Add a dashed line at the location 0 to visually separate positive and negative values
         fig.add_layout(Span(location=0, dimension='width', line_color='#666666',
                             line_dash='dashed', line_width=1))
+
+        # Calculate returns for long and short trades based on the 'Size' and 'ReturnPct' columns of 'trades' data
         returns_long = np.where(trades['Size'] > 0, trades['ReturnPct'], np.nan)
         returns_short = np.where(trades['Size'] < 0, trades['ReturnPct'], np.nan)
+
+        # Calculate marker sizes based on the absolute values of 'Size' using interpolation
         size = trades['Size'].abs()
         size = np.interp(size, (size.min(), size.max()), (8, 20))
+
+        # Add data to the trade_source, which is used as a data source for the scatter plot markers
         trade_source.add(returns_long, 'returns_long')
         trade_source.add(returns_short, 'returns_short')
         trade_source.add(size, 'marker_size')
+
+        # If 'count' column exists in 'trades', add it to the trade_source as well
         if 'count' in trades:
             trade_source.add(trades['count'], 'count')
+
+        # Create scatter plot markers for long trades and configure their appearance
         r1 = fig.scatter('index', 'returns_long', source=trade_source, fill_color=cmap,
-                         marker='triangle', line_color='black', size='marker_size')
+                        marker='triangle', line_color='black', size='marker_size')
+
+        # Create scatter plot markers for short trades and configure their appearance
         r2 = fig.scatter('index', 'returns_short', source=trade_source, fill_color=cmap,
-                         marker='inverted_triangle', line_color='black', size='marker_size')
+                        marker='inverted_triangle', line_color='black', size='marker_size')
+
+        # Define tooltips to display when hovering over the markers
         tooltips = [("Size", "@size{0,0}")]
         if 'count' in trades:
             tooltips.append(("Count", "@count{0,0}"))
+
+        # Set tooltips for long trade markers, displaying 'P/L' (profit/loss) information
         set_tooltips(fig, tooltips + [("P/L", "@returns_long{+0.[000]%}")],
-                     vline=False, renderers=[r1])
+                    vline=False, renderers=[r1])
+
+        # Set tooltips for short trade markers, displaying 'P/L' (profit/loss) information
         set_tooltips(fig, tooltips + [("P/L", "@returns_short{+0.[000]%}")],
-                     vline=False, renderers=[r2])
+                    vline=False, renderers=[r2])
+
+        # Format the y-axis labels to display values as percentages with two decimal places
         fig.yaxis.formatter = NumeralTickFormatter(format="0.[00]%")
+
+        # Return the generated plot figure
         return fig
 
     def _plot_volume_section():
@@ -434,6 +483,7 @@ return this.labels[index] || "";
         r = fig.vbar('index', BAR_WIDTH, 'Volume', source=source, color=inc_cmap)
         set_tooltips(fig, [('Volume', '@Volume{0.00 a}')], renderers=[r])
         fig.yaxis.formatter = NumeralTickFormatter(format="0 a")
+        # print('_plot_volume_section')
         return fig
 
     def _plot_superimposed_ohlc():
