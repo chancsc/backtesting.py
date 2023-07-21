@@ -1,0 +1,66 @@
+[
+  {
+    "ticker": "1299.HK",
+    "name": "AIA"
+  },
+  {
+    "ticker": "9988.HK",
+    "name": "Alibaba"
+  },
+  {
+    "ticker": "2318.HK",
+    "name": "Ping An"
+  },
+  {
+    "ticker": "002594.SZ",
+    "name": "Byd Shen Zhen"
+  },
+  {
+    "ticker": "C6L.SI",
+    "name": "SIA"
+  },
+  {
+    "ticker": "TCU.SI",
+    "name": "Credit Bureau"
+  },
+  {
+    "ticker": "D05.SI",
+    "name": "DBS"
+  },
+  {
+    "ticker": "O39.SI",
+    "name": "OCBC"
+  },
+  {
+    "ticker": "U11.SI",
+    "name": "UOB"
+  },
+  {
+    "ticker": "S63.SI",
+    "name": "STech"
+  },
+  {
+    "ticker": "S68.SI",
+    "name": "SGX"
+  },
+  {
+    "ticker": "9CI.SI",
+    "name": "Capital Land"
+  },
+  {
+    "ticker": "M44U.SI",
+    "name": "Maple Tree"
+  },
+  {
+    "ticker": "NIO.SI",
+    "name": "NIO"
+  },
+  {
+    "ticker": "BVA",
+    "name": "Top Grove"
+  },
+  {
+    "ticker": "Z74",
+    "name": "Singtel"
+  }
+]
