@@ -30,7 +30,7 @@ def generate_stock_data(symbol, start_date=None, end_date=None):
     if not os.path.exists(csv_file) or datetime.fromtimestamp(os.path.getmtime(csv_file)).date() < date.today():
         if os.path.exists(csv_file):
             os.remove(csv_file)
-            print('Existing CSV file deleted.')
+            # print('Existing CSV file deleted.')
 
         # Download stock data
         data = yf.download(symbol, start=start_date, end=end_date)
@@ -41,10 +41,6 @@ def generate_stock_data(symbol, start_date=None, end_date=None):
         # Save data to CSV
         data.to_csv(csv_file, index=False)
 
-        print('Data downloaded successfully.')
-    else:
-        print('CSV file is up to date.')
-
-
-# Generate stock data with default parameters
-#generate_stock_data('TSLA')
+        # print('Data downloaded successfully.')
+    # else:
+        # print('CSV file is up to date. Back-testing now...')
