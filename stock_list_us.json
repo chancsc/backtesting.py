@@ -1,146 +1,38 @@
 [
-  {
-    "ticker": "AAPL",
-    "name": "Apple"
-  },
-  {
-    "ticker": "ABNB",
-    "name": "Airbnb"
-  },
-  {
-    "ticker": "AMZN",
-    "name": "Amazon"
-  },
-  {
-    "ticker": "ARKF",
-    "name": "ARK Fintech Innovation ETF"
-  },
-  {
-    "ticker": "ARKK",
-    "name": "ARK Innovation ETF"
-  },
-  {
-    "ticker": "BABA",
-    "name": "Alibaba"
-  },
-  {
-    "ticker": "BAC",
-    "name": "Bank of America"
-  },
-  {
-    "ticker": "BILI",
-    "name": "Bilibili"
-  },
-  {
-    "ticker": "BRK-B",
-    "name": "Berkshire Hathaway"
-  },
-  {
-    "ticker": "C",
-    "name": "Citigroup"
-  },
-  {
-    "ticker": "CPNG",
-    "name": "Coupang"
-  },
-  {
-    "ticker": "FUTU",
-    "name": "Futu Holdings"
-  },
-  {
-    "ticker": "GOOG",
-    "name": "Alphabet (Google)"
-  },
-  {
-    "ticker": "GRAB",
-    "name": "Grab"
-  },
-  {
-    "ticker": "HUYA",
-    "name": "Huya"
-  },
-  {
-    "ticker": "IQ",
-    "name": "iQIYI"
-  },
-  {
-    "ticker": "JXN",
-    "name": "Jiuxian"
-  },
-  {
-    "ticker": "KO",
-    "name": "The Coca-Cola Company"
-  },
-  {
-    "ticker": "MCD",
-    "name": "McDonald's"
-  },
-  {
-    "ticker": "META",
-    "name": "Facebook (Meta)"
-  },
-  {
-    "ticker": "MSFT",
-    "name": "Microsoft"
-  },
-  {
-    "ticker": "NIO",
-    "name": "NIO"
-  },
-  {
-    "ticker": "NKE",
-    "name": "Nike"
-  },
-  {
-    "ticker": "NVDA",
-    "name": "NVIDIA"
-  },
-  {
-    "ticker": "PDD",
-    "name": "Pinduoduo"
-  },
-  {
-    "ticker": "PLTR",
-    "name": "Palantir Technologies"
-  },
-  {
-    "ticker": "PYPL",
-    "name": "PayPal"
-  },
-  {
-    "ticker": "SBUX",
-    "name": "Starbucks"
-  },
-  {
-    "ticker": "SE",
-    "name": "Sea Limited"
-  },
-  {
-    "ticker": "TIGR",
-    "name": "UP Fintech Holding"
-  },
-  {
-    "ticker": "TME",
-    "name": "Tencent Music Entertainment"
-  },
-  {
-    "ticker": "TSLA",
-    "name": "Tesla"
-  },
-  {
-    "ticker": "TSM",
-    "name": "Taiwan Semiconductor Manufacturing Company"
-  },
-  {
-    "ticker": "UBS",
-    "name": "UBS Group"
-  },
-  {
-    "ticker": "VIOT",
-    "name": "Viomi Technology"
-  },
-  {
-    "ticker": "XPEV",
-    "name": "XPeng"
-  }
+  {"ticker": "AAPL", "name": "Apple"},
+  {"ticker": "ABNB", "name": "Airbnb"},
+  {"ticker": "AMZN", "name": "Amazon"},
+  {"ticker": "ARKF", "name": "ARK Fintech Innovation ETF"},
+  {"ticker": "ARKK", "name": "ARK Innovation ETF"},
+  {"ticker": "BABA", "name": "Alibaba"},
+  {"ticker": "BAC", "name": "Bank of America"},
+  {"ticker": "BILI", "name": "Bilibili"},
+  {"ticker": "BRK-B", "name": "Berkshire Hathaway"},
+  {"ticker": "C", "name": "Citigroup"},
+  {"ticker": "CPNG", "name": "Coupang"},
+  {"ticker": "FUTU", "name": "Futu Holdings"},
+  {"ticker": "GOOG", "name": "Alphabet (Google)"},
+  {"ticker": "GRAB", "name": "Grab"},
+  {"ticker": "HUYA", "name": "Huya"},
+  {"ticker": "IQ", "name": "iQIYI"},
+  {"ticker": "JXN", "name": "Jackson Financial"},
+  {"ticker": "KO", "name": "The Coca-Cola Company"},
+  {"ticker": "MCD", "name": "McDonald's"},
+  {"ticker": "META", "name": "Facebook (Meta)"},
+  {"ticker": "MSFT", "name": "Microsoft"},
+  {"ticker": "NIO", "name": "NIO"},
+  {"ticker": "NKE", "name": "Nike"},
+  {"ticker": "NVDA", "name": "NVIDIA"},
+  {"ticker": "PDD", "name": "Pinduoduo"},
+  {"ticker": "PLTR", "name": "Palantir Technologies"},
+  {"ticker": "PYPL", "name": "PayPal"},
+  {"ticker": "SBUX", "name": "Starbucks"},
+  {"ticker": "SE", "name": "Sea Limited"},
+  {"ticker": "TIGR", "name": "UP Fintech Holding"},
+  {"ticker": "TME", "name": "Tencent Music Entertainment"},
+  {"ticker": "TSLA", "name": "Tesla"},
+  {"ticker": "TSM", "name": "Taiwan Semiconductor Manufacturing Company"},
+  {"ticker": "UBS", "name": "UBS Group"},
+  {"ticker": "VIOT", "name": "Viomi Technology"},
+  {"ticker": "XPEV", "name": "XPeng"}
 ]
