@@ -210,6 +210,7 @@ class Strategy(metaclass=ABCMeta):
         """
         assert 0 < size < 1 or round(size) == size, \
             "size must be a positive fraction of equity, or a positive whole number of units"
+        # print("new buy order triggered")
         return self._broker.new_order(size, limit, stop, sl, tp, tag)
 
     def sell(self, *,
@@ -230,6 +231,7 @@ class Strategy(metaclass=ABCMeta):
         """
         assert 0 < size < 1 or round(size) == size, \
             "size must be a positive fraction of equity, or a positive whole number of units"
+        # print("new sell order tirggered")
         return self._broker.new_order(-size, limit, stop, sl, tp, tag)
 
     @property
@@ -557,6 +559,7 @@ class Trade:
         assert 0 < portion <= 1, "portion must be a fraction between 0 and 1"
         size = copysign(max(1, round(abs(self.__size) * portion)), -self.__size)
         order = Order(self.__broker, size, parent_trade=self, tag=self.__tag)
+        # print("order close =", (order))
         self.__broker.orders.insert(0, order)
 
     # Fields getters
@@ -569,11 +572,13 @@ class Trade:
     @property
     def entry_price(self) -> float:
         """Trade entry price."""
+        # print("entry_price =", (self.__entry_price))
         return self.__entry_price
 
     @property
     def exit_price(self) -> Optional[float]:
         """Trade exit price (or None if the trade is still active)."""
+        # print("exit_price =", (self.__exit_price))
         return self.__exit_price
 
     @property
@@ -615,23 +620,29 @@ class Trade:
     @property
     def entry_time(self) -> Union[pd.Timestamp, int]:
         """Datetime of when the trade was entered."""
-        return self.__broker._data.index[self.__entry_bar]
+        entry_time = self.__broker._data.index[self.__entry_bar]
+        # print("Entry Time:", entry_time)
+        return entry_time
 
     @property
     def exit_time(self) -> Optional[Union[pd.Timestamp, int]]:
         """Datetime of when the trade was exited."""
         if self.__exit_bar is None:
             return None
-        return self.__broker._data.index[self.__exit_bar]
+        exit_time = self.__broker._data.index[self.__exit_bar]
+        # print("Exit Time:", exit_time)
+        return exit_time
 
     @property
     def is_long(self):
         """True if the trade is long (trade size is positive)."""
+        print("is_long:", self.__size)
         return self.__size > 0
 
     @property
     def is_short(self):
         """True if the trade is short (trade size is negative)."""
+        print("is_short:", self.__size)
         return not self.is_long
 
     @property
@@ -734,6 +745,8 @@ class _Broker:
         """
         Argument size indicates whether the order is long or short
         """
+        # print("new_order triggered")
+
         size = float(size)
         stop = stop and float(stop)
         limit = limit and float(limit)
@@ -755,6 +768,7 @@ class _Broker:
                     f"TP ({tp}) < LIMIT ({limit or stop or adjusted_price}) < SL ({sl})")
 
         order = Order(self, size, limit, stop, sl, tp, trade, tag)
+
         # Put the new order in the order queue,
         # inserting SL/TP/trade-closing orders in-front
         if trade:
@@ -783,6 +797,7 @@ class _Broker:
         Long/short `price`, adjusted for commisions.
         In long positions, the adjusted price is a fraction higher, and vice versa.
         """
+        # print("_adjusted_price =", (price or self.last_price))
         return (price or self.last_price) * (1 + copysign(self._commission, size))
 
     @property
@@ -966,6 +981,7 @@ class _Broker:
             self._process_orders()
 
     def _reduce_trade(self, trade: Trade, price: float, size: float, time_index: int):
+        # print("_reduce_trade")
         assert trade.size * size < 0
         assert abs(trade.size) >= abs(size)
 
@@ -996,6 +1012,7 @@ class _Broker:
 
         self.closed_trades.append(trade._replace(exit_price=price, exit_bar=time_index))
         self._cash += trade.pl
+        # print("_close_trade")
 
     def _open_trade(self, price: float, size: int,
                     sl: Optional[float], tp: Optional[float], time_index: int, tag):
@@ -1009,18 +1026,10 @@ class _Broker:
             trade.tp = tp
         if sl:
             trade.sl = sl
-
+        # print("_open_trade")
 
 class Backtest:
-    """
-    Backtest a particular (parameterized) strategy
-    on particular data.
 
-    Upon initialization, call method
-    `backtesting.backtesting.Backtest.run` to run a backtest
-    instance, or `backtesting.backtesting.Backtest.optimize` to
-    optimize it.
-    """
     def __init__(self,
                  data: pd.DataFrame,
                  strategy: Type[Strategy],
@@ -1032,51 +1041,6 @@ class Backtest:
                  hedging=False,
                  exclusive_orders=False
                  ):
-        """
-        Initialize a backtest. Requires data and a strategy to test.
-
-        `data` is a `pd.DataFrame` with columns:
-        `Open`, `High`, `Low`, `Close`, and (optionally) `Volume`.
-        If any columns are missing, set them to what you have available,
-        e.g.
-
-            df['Open'] = df['High'] = df['Low'] = df['Close']
-
-        The passed data frame can contain additional columns that
-        can be used by the strategy (e.g. sentiment info).
-        DataFrame index can be either a datetime index (timestamps)
-        or a monotonic range index (i.e. a sequence of periods).
-
-        `strategy` is a `backtesting.backtesting.Strategy`
-        _subclass_ (not an instance).
-
-        `cash` is the initial cash to start with.
-
-        `commission` is the commission ratio. E.g. if your broker's commission
-        is 1% of trade value, set commission to `0.01`. Note, if you wish to
-        account for bid-ask spread, you can approximate doing so by increasing
-        the commission, e.g. set it to `0.0002` for commission-less forex
-        trading where the average spread is roughly 0.2‰ of asking price.
-
-        `margin` is the required margin (ratio) of a leveraged account.
-        No difference is made between initial and maintenance margins.
-        To run the backtest using e.g. 50:1 leverge that your broker allows,
-        set margin to `0.02` (1 / leverage).
-
-        If `trade_on_close` is `True`, market orders will be filled
-        with respect to the current bar's closing price instead of the
-        next bar's open.
-
-        If `hedging` is `True`, allow trades in both directions simultaneously.
-        If `False`, the opposite-facing orders first close existing trades in
-        a [FIFO] manner.
-
-        If `exclusive_orders` is `True`, each new order auto-closes the previous
-        trade/position, making at most a single trade (long or short) in effect
-        at each time.
-
-        [FIFO]: https://www.investopedia.com/terms/n/nfa-compliance-rule-2-43b.asp
-        """
 
         if not (isinstance(strategy, type) and issubclass(strategy, Strategy)):
             raise TypeError('`strategy` must be a Strategy sub-type')
@@ -1135,52 +1099,7 @@ class Backtest:
         self._results: Optional[pd.Series] = None
 
     def run(self, **kwargs) -> pd.Series:
-        """
-        Run the backtest. Returns `pd.Series` with results and statistics.
 
-        Keyword arguments are interpreted as strategy parameters.
-
-            >>> Backtest(GOOG, SmaCross).run()
-            Start                     2004-08-19 00:00:00
-            End                       2013-03-01 00:00:00
-            Duration                   3116 days 00:00:00
-            Exposure Time [%]                     93.9944
-            Equity Final [$]                      51959.9
-            Equity Peak [$]                       75787.4
-            Return [%]                            419.599
-            Buy & Hold Return [%]                 703.458
-            Return (Ann.) [%]                      21.328
-            Volatility (Ann.) [%]                 36.5383
-            Sharpe Ratio                         0.583718
-            Sortino Ratio                         1.09239
-            Calmar Ratio                         0.444518
-            Max. Drawdown [%]                    -47.9801
-            Avg. Drawdown [%]                    -5.92585
-            Max. Drawdown Duration      584 days 00:00:00
-            Avg. Drawdown Duration       41 days 00:00:00
-            # Trades                                   65
-            Win Rate [%]                          46.1538
-            Best Trade [%]                         53.596
-            Worst Trade [%]                      -18.3989
-            Avg. Trade [%]                        2.35371
-            Max. Trade Duration         183 days 00:00:00
-            Avg. Trade Duration          46 days 00:00:00
-            Profit Factor                         2.08802
-            Expectancy [%]                        8.79171
-            SQN                                  0.916893
-            Kelly Criterion                        0.6134
-            _strategy                            SmaCross
-            _equity_curve                           Eq...
-            _trades                       Size  EntryB...
-            dtype: object
-
-        .. warning::
-            You may obtain different results for different strategy parameters.
-            E.g. if you use 50- and 200-bar SMA, the trading simulation will
-            begin on bar 201. The actual length of delay is equal to the lookback
-            period of the `Strategy.I` indicator which lags the most.
-            Obviously, this can affect results.
-        """
         data = _Data(self._data.copy(deep=False))
         broker: _Broker = self._broker(data=data)
         strategy: Strategy = self._strategy(broker, data, kwargs)
@@ -1253,70 +1172,7 @@ class Backtest:
                  **kwargs) -> Union[pd.Series,
                                     Tuple[pd.Series, pd.Series],
                                     Tuple[pd.Series, pd.Series, dict]]:
-        """
-        Optimize strategy parameters to an optimal combination.
-        Returns result `pd.Series` of the best run.
 
-        `maximize` is a string key from the
-        `backtesting.backtesting.Backtest.run`-returned results series,
-        or a function that accepts this series object and returns a number;
-        the higher the better. By default, the method maximizes
-        Van Tharp's [System Quality Number](https://google.com/search?q=System+Quality+Number).
-
-        `method` is the optimization method. Currently two methods are supported:
-
-        * `"grid"` which does an exhaustive (or randomized) search over the
-          cartesian product of parameter combinations, and
-        * `"skopt"` which finds close-to-optimal strategy parameters using
-          [model-based optimization], making at most `max_tries` evaluations.
-
-        [model-based optimization]: \
-            https://scikit-optimize.github.io/stable/auto_examples/bayesian-optimization.html
-
-        `max_tries` is the maximal number of strategy runs to perform.
-        If `method="grid"`, this results in randomized grid search.
-        If `max_tries` is a floating value between (0, 1], this sets the
-        number of runs to approximately that fraction of full grid space.
-        Alternatively, if integer, it denotes the absolute maximum number
-        of evaluations. If unspecified (default), grid search is exhaustive,
-        whereas for `method="skopt"`, `max_tries` is set to 200.
-
-        `constraint` is a function that accepts a dict-like object of
-        parameters (with values) and returns `True` when the combination
-        is admissible to test with. By default, any parameters combination
-        is considered admissible.
-
-        If `return_heatmap` is `True`, besides returning the result
-        series, an additional `pd.Series` is returned with a multiindex
-        of all admissible parameter combinations, which can be further
-        inspected or projected onto 2D to plot a heatmap
-        (see `backtesting.lib.plot_heatmaps()`).
-
-        If `return_optimization` is True and `method = 'skopt'`,
-        in addition to result series (and maybe heatmap), return raw
-        [`scipy.optimize.OptimizeResult`][OptimizeResult] for further
-        inspection, e.g. with [scikit-optimize]\
-        [plotting tools].
-
-        [OptimizeResult]: \
-            https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.OptimizeResult.html
-        [scikit-optimize]: https://scikit-optimize.github.io
-        [plotting tools]: https://scikit-optimize.github.io/stable/modules/plots.html
-
-        If you want reproducible optimization results, set `random_state`
-        to a fixed integer random seed.
-
-        Additional keyword arguments represent strategy arguments with
-        list-like collections of possible values. For example, the following
-        code finds and returns the "best" of the 7 admissible (of the
-        9 possible) parameter combinations:
-
-            backtest.optimize(sma1=[5, 10, 15], sma2=[10, 20, 40],
-                              constraint=lambda p: p.sma1 < p.sma2)
-
-        .. TODO::
-            Improve multiprocessing/parallel execution on Windos with start method 'spawn'.
-        """
         if not kwargs:
             raise ValueError('Need some strategy parameters to optimize')
 
@@ -1401,17 +1257,10 @@ class Backtest:
                 for i in range(0, len(seq), n):
                     yield seq[i:i + n]
 
-            # Save necessary objects into "global" state; pass into concurrent executor
-            # (and thus pickle) nothing but two numbers; receive nothing but numbers.
-            # With start method "fork", children processes will inherit parent address space
-            # in a copy-on-write manner, achieving better performance/RAM benefit.
             backtest_uuid = np.random.random()
             param_batches = list(_batch(param_combos))
             Backtest._mp_backtests[backtest_uuid] = (self, param_batches, maximize)  # type: ignore
             try:
-                # If multiprocessing start method is 'fork' (i.e. on POSIX), use
-                # a pool of processes to compute results in parallel.
-                # Otherwise (i.e. on Windos), sequential computation will be "faster".
                 if mp.get_start_method(allow_none=False) == 'fork':
                     with ProcessPoolExecutor() as executor:
                         futures = [executor.submit(Backtest._mp_task, backtest_uuid, i)
@@ -1478,9 +1327,6 @@ class Backtest:
                 else:
                     dimensions.append(Categorical(values.tolist(), name=key, transform='onehot'))
 
-            # Avoid recomputing re-evaluations:
-            # "The objective has been evaluated at this point before."
-            # https://github.com/scikit-optimize/scikit-optimize/issues/302
             memoized_run = lru_cache()(lambda tup: self.run(**dict(tup)))
 
             # np.inf/np.nan breaks sklearn, np.finfo(float).max breaks skopt.plots.plot_objective
@@ -1558,86 +1404,8 @@ class Backtest:
              smooth_equity=False, relative_equity=True,
              superimpose: Union[bool, str] = True,
              resample=True, reverse_indicators=False,
-             show_legend=True, open_browser=True):
-        """
-        Plot the progression of the last backtest run.
-
-        If `results` is provided, it should be a particular result
-        `pd.Series` such as returned by
-        `backtesting.backtesting.Backtest.run` or
-        `backtesting.backtesting.Backtest.optimize`, otherwise the last
-        run's results are used.
-
-        `filename` is the path to save the interactive HTML plot to.
-        By default, a strategy/parameter-dependent file is created in the
-        current working directory.
-
-        `plot_width` is the width of the plot in pixels. If None (default),
-        the plot is made to span 100% of browser width. The height is
-        currently non-adjustable.
-
-        If `plot_equity` is `True`, the resulting plot will contain
-        an equity (initial cash plus assets) graph section. This is the same
-        as `plot_return` plus initial 100%.
-
-        If `plot_return` is `True`, the resulting plot will contain
-        a cumulative return graph section. This is the same
-        as `plot_equity` minus initial 100%.
-
-        If `plot_pl` is `True`, the resulting plot will contain
-        a profit/loss (P/L) indicator section.
-
-        If `plot_volume` is `True`, the resulting plot will contain
-        a trade volume section.
-
-        If `plot_drawdown` is `True`, the resulting plot will contain
-        a separate drawdown graph section.
-
-        If `plot_trades` is `True`, the stretches between trade entries
-        and trade exits are marked by hash-marked tractor beams.
-
-        If `smooth_equity` is `True`, the equity graph will be
-        interpolated between fixed points at trade closing times,
-        unaffected by any interim asset volatility.
-
-        If `relative_equity` is `True`, scale and label equity graph axis
-        with return percent, not absolute cash-equivalent values.
-
-        If `superimpose` is `True`, superimpose larger-timeframe candlesticks
-        over the original candlestick chart. Default downsampling rule is:
-        monthly for daily data, daily for hourly data, hourly for minute data,
-        and minute for (sub-)second data.
-        `superimpose` can also be a valid [Pandas offset string],
-        such as `'5T'` or `'5min'`, in which case this frequency will be
-        used to superimpose.
-        Note, this only works for data with a datetime index.
-
-        If `resample` is `True`, the OHLC data is resampled in a way that
-        makes the upper number of candles for Bokeh to plot limited to 10_000.
-        This may, in situations of overabundant data,
-        improve plot's interactive performance and avoid browser's
-        `Javascript Error: Maximum call stack size exceeded` or similar.
-        Equity & dropdown curves and individual trades data is,
-        likewise, [reasonably _aggregated_][TRADES_AGG].
-        `resample` can also be a [Pandas offset string],
-        such as `'5T'` or `'5min'`, in which case this frequency will be
-        used to resample, overriding above numeric limitation.
-        Note, all this only works for data with a datetime index.
-
-        If `reverse_indicators` is `True`, the indicators below the OHLC chart
-        are plotted in reverse order of declaration.
-
-        [Pandas offset string]: \
-            https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#dateoffset-objects
-
-        [TRADES_AGG]: lib.html#backtesting.lib.TRADES_AGG
-
-        If `show_legend` is `True`, the resulting plot graphs will contain
-        labeled legends.
-
-        If `open_browser` is `True`, the resulting `filename` will be
-        opened in the default web browser.
-        """
+             show_legend=True, open_browser=True, showTable=True):
+        
         if results is None:
             if self._results is None:
                 raise RuntimeError('First issue `backtest.run()` to obtain results.')
@@ -1661,4 +1429,5 @@ class Backtest:
             resample=resample,
             reverse_indicators=reverse_indicators,
             show_legend=show_legend,
-            open_browser=open_browser)
+            open_browser=open_browser,
+            showTable=showTable)
