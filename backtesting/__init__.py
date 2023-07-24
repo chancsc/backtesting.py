@@ -15,13 +15,13 @@
 
 These tutorials are also available as live Jupyter notebooks:
 [![Binder](https://mybinder.org/badge_logo.svg)][binder]
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.png)][colab]
+[![stockTickerle Colab](https://colab.research.stockTickerle.com/assets/colab-badge.png)][colab]
 <br>In Colab, you might have to `!pip install backtesting`.
 
 [binder]: \
     https://mybinder.org/v2/gh/kernc/backtesting.py/master?\
 urlpath=lab%2Ftree%2Fdoc%2Fexamples%2FQuick%20Start%20User%20Guide.ipynb
-[colab]: https://colab.research.google.com/github/kernc/backtesting.py/
+[colab]: https://colab.research.stockTickerle.com/github/kernc/backtesting.py/
 
 ## Example Strategies
 
