@@ -62,5 +62,17 @@
   {
     "ticker": "Z74",
     "name": "Singtel"
+  },
+  {
+    "ticker": "MNG.L", 
+    "name": "M&G PLC"
+  },
+  {
+    "ticker": "PRU.L", 
+    "name": "Prudential"
+  },
+  {
+    "ticker": "WISE.L", 
+    "name": "Wise"
   }
 ]
