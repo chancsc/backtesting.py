@@ -13,55 +13,122 @@ Backtest trading strategies with Python.
 Installation
 ------------
 
-    $ gitclone https://github.com/chancsc/backtesting.py.git
-    $ pip install yfinance
-    $ pip install pandas, seaborn
-    $ pip install tabulate
-
+```bash
+$ gitclone https://github.com/chancsc/backtesting.py.git
+$ pip install yfinance
+$ pip install pandas, seaborn
+$ pip install tabulate
+```
 
 To start
 --------
-1. Call the most basic program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
+Call the most basic program to generate chart with 10 & 20 days MA (moving average), buy/sell indicators etc.
    By default, the script will pull data from 1 Jan {current year} --> {today}.
 
 ```python
-python show_chart.py TSLA
+python check_bss.py TSLA
 ```
 
-2. To extract longer period data, use the following script first.
-  
-   Both parameters sdate (start date), edate (end date) are optional.
-   If omitted, sdate default to 1 Jan {current year}, edate default to {today}.
+Back-test single stock
+----------------------
+
+Run single check, NOT to open browser
 
 ```python
-python gen_stock_csv.py --stock=TSLA --sdate=01/01/2020 --edate=15/07/2023
-or
-python gen_stock_csv.py --stock=TSLA --sdate=01/01/2020
-
-
-python show_chart.py TSLA
+python check_bss.py MSFT --browser=0
 ```
 
-Note on chart
------
+Run single check, NOT open browser, NOT display table in console
 
-    Triagle Up --> Long, Trigagle Down --> Short
+```python
+python check_bss.py AAPL --browser=0 --table=0
+```
+
+Run singgle check, NOT to open browser, NOT display table, year 2022
+
+```python
+python check_bss.py AAPL --browser=0 --table=0 --year=2022
+```
+
+Download stock data to csv
+---------------------------
+
+Download YTD data for single stock
+
+```python
+python get_stock_data_SA.py --stock=IQ
+```
+
+Download specific date range data for single stock
+
+```python
+python get_stock_data_SA.py --stock=IQ --sdate=01/01/2022 --edate=01/01/2023
+```
+
+Batch mode
+==========
+
+Batch mode, default retrieve current year data, back-test based on stock_list_us.json 
+
+```python
+python check_bss_batch.py
+```
+
+Batch mode, for year 2021 & export data to log
+
+```python
+python check_bss_batch.py --year=2021 > PL2021-5-10.txt 2>&1
+```
+
+Batch mode, for year 2022, specify stocklist file, output to log
+
+```python
+python check_bss_batch.py --year=2022 --file=stock_list_test.json > output.txt 2>&1
+```
+
+
+
+Cronjob setup
+--------------
+
+```bash
+$ crontab -e
+```
+
+Scheduled to check US stock list on every Tue - Sat morning (SG Time, 6 am)
+
+```bash
+0 6 * * 2-6 ~/code/backtesting.py/run_check_bss_batch.sh
+```
+
+Scheduled to check US stock list on every Mon - Fri (SG Time 7:30 pm)
+
+```bash
+30 17 * * 1-5 ~/code/backtesting.py/run_check_bss_batch_asia.sh
+```
+
+
+Note on chart
+-------------
     
-    10 days MA above 20 days MA --> Bullish
+    10 days MA above 20 days MA --> Bullish (not neccessaary, depend on stock)
     
-    20 day MA above 10 days MA —> Bearish
+    20 day MA above 10 days MA —> Bearish (not neccessaary, depend on stock)
     
     Arrow up or down doesn’t represent bullish or bearish
     
     Green & Red parallel short bar doesn’t represent bullish or bearish
 
-3. Added new table output in the console for ease of reference.
+```python
+python check_bss.py TSLA
+```
+
+Enhancement
+-----------
+Added new table output in the console for ease of reference.
    Size negative value = short the stock
 
 ```python
-
-python show_chart.py TSLA
-
 +--------+---------------+--------------+--------------+-------------+
 |   Size |   Entry Price |   Exit Price | Entry Time   | Exit Time   |
 +========+===============+==============+==============+=============+
@@ -76,7 +143,7 @@ python show_chart.py TSLA
 ```
 
 
-4. Read this [user guide](https://github.com/chancsc/backtesting.py/blob/master/doc/examples/Quick%20Start%20User%20Guide.ipynb) for more details usage
+Read this [user guide](https://github.com/chancsc/backtesting.py/blob/master/doc/examples/Quick%20Start%20User%20Guide.ipynb) for more details usage
 
 
 Usage (from orginal author)
