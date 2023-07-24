@@ -58,7 +58,6 @@ if IS_JUPYTER_NOTEBOOK:
                   'Reset with `backtesting.set_bokeh_output(notebook=False)`.')
     output_notebook()
 
-
 def set_bokeh_output(notebook=False):
     """
     Set Bokeh to output either to a file or Jupyter notebook.
@@ -174,19 +173,22 @@ def plot(*, results: pd.Series,
          smooth_equity=False, relative_equity=True,
          superimpose=True, resample=True,
          reverse_indicators=True,
-         show_legend=True, open_browser=True):
+         show_legend=True, open_browser=True, showTable=False):
     """
     Like much of GUI code everywhere, this is a mess.
     """
     # We need to reset global Bokeh state, otherwise subsequent runs of
     # plot() contain some previous run's cruft data (was noticed when
     # TestPlot.test_file_size() test was failing).
+
     if not filename and not IS_JUPYTER_NOTEBOOK:
         filename = _windos_safe_filename(f"{filename}_{str(results._strategy)}")
     _bokeh_reset(filename)
 
     COLORS = [BEAR_COLOR, BULL_COLOR]
     BAR_WIDTH = .8
+    # profit and lost value at global level
+    pl_value = 0
 
     assert df.index.equals(results['_equity_curve'].index)
     equity_data = results['_equity_curve'].copy(deep=False)
@@ -242,12 +244,15 @@ def plot(*, results: pd.Series,
         returns_positive=(trades['ReturnPct'] > 0).astype(int).astype(str),
     ))
 
+    # to print out the data in console
+    print("Stock: ", filename)
     data = {
         "Size": trades.get("Size", ""),
         "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
         "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
         "Entry Price": trades.get("EntryPrice", ""),
-        "Exit Price": trades.get("ExitPrice", "")
+        "Exit Price": trades.get("ExitPrice", ""),
+        "P/L": ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"]).apply(lambda x: "{:.2f}".format(x))
     }
 
     # Format the float values to two decimal places (if applicable)
@@ -255,40 +260,8 @@ def plot(*, results: pd.Series,
         if isinstance(value, float):
             data[key] = "{:.2f}".format(value)
 
-    print(tabulate(data, headers='keys', tablefmt='grid'))
-
-    # start telegram
-    # Check if the last entry time equals the exit time
-    if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
-
-        # Export the table to a file
-        print("Export the table to a file")
-        with open(f"{filename}.txt", 'w') as file:
-            file.write(tabulate(data, headers='keys', tablefmt='grid'))
-
-        print("Sending Telegram message...")
-
-        # Load the configuration from the JSON file
-        with open("config.json", "r") as config_file:
-            config = json.load(config_file)
-
-        bot_token = config["bot_token"]
-        chat_id = config["chat_id"]
-        ttext = "Stock trend alert"
-        url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
-
-        with open(f"{filename}.txt", 'rb') as file:
-            files = {"document": file}
-            data = {"chat_id": chat_id, "caption": ttext}
-            response = requests.post(url, files=files, data=data)
-
-        # Check the Telegram API response status
-        if response.status_code == 200:
-            print("Table sent to Telegram successfully.")
-        else:
-            print("Failed to send the table to Telegram. Status code:", response.status_code)
-    # end telegram
-
+    if showTable:
+        print(tabulate(data, headers='keys', tablefmt='grid'))
 
     inc_cmap = factor_cmap('inc', COLORS, ['0', '1'])
     cmap = factor_cmap('returns_positive', COLORS, ['0', '1'])
@@ -415,10 +388,17 @@ return this.labels[index] || "";
                     legend_label='Peak ({})'.format(
                         legend_format.format(equity[argmax] * (100 if relative_equity else 1))),
                     color='cyan', size=8)
+        
         fig.scatter(index[-1], equity.values[-1],
                     legend_label='Final ({})'.format(
                         legend_format.format(equity.iloc[-1] * (100 if relative_equity else 1))),
                     color='blue', size=8)
+        
+        # print out at console
+        final_equity = equity.iloc[-1] * (100 if relative_equity else 1)
+        nonlocal pl_value
+        pl_value = final_equity - 100
+        print('P/L: {:.2f}%'.format(pl_value))
 
         if not plot_drawdown:
             drawdown = equity_data['DrawdownPct']
@@ -691,6 +671,35 @@ return this.labels[index] || "";
 
     if superimpose and is_datetime_index:
         _plot_superimposed_ohlc()
+
+    # start telegram, continue from ~ line 264
+    # Check if the last entry time equals the exit time
+    if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
+
+        # Export the table to a file
+        # print("Export the table to a file")
+        with open(f"{filename}.txt", 'w') as file:
+            file.write(tabulate(data, headers='keys', tablefmt='grid'))
+
+        # print("Sending Telegram message...")
+
+        # Load the configuration from the JSON file
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+
+        bot_token = config["bot_token"]
+        chat_id = config["chat_id"]
+        # ttext = "Trading opportunity alert"
+        ttext = ("History P/L: {:.2f}".format(pl_value))
+        url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
+
+        with open(f"{filename}.txt", 'rb') as file:
+            files = {"document": file}
+            data = {"chat_id": chat_id, "caption": ttext}
+            response = requests.post(url, files=files, data=data)
+
+    # # end telegram
+
 
     ohlc_bars = _plot_ohlc()
     if plot_trades:
