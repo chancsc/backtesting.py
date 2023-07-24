@@ -11,9 +11,7 @@ def _read_file(stock_symbol):
 
 
 # Example usage: Pass the stock symbol when calling the function
-# to facilitate the testing file _test.py
-
-stockTicker = _read_file('GOOG')
+#stockTicker = _read_file('GOOG')
 """DataFrame of daily NASDAQ:TSLA (Tesla) stock price data from 2004 to 2013."""
 
 #EURUSD = _read_file('EURUSD')
