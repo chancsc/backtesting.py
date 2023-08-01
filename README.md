@@ -16,7 +16,7 @@ Installation
 ```bash
 $ gitclone https://github.com/chancsc/backtesting.py.git
 $ pip install yfinance
-$ pip install pandas, seaborn
+$ pip install pandas seaborn
 $ pip install tabulate
 ```
 
