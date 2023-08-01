@@ -18,6 +18,12 @@ $ gitclone https://github.com/chancsc/backtesting.py.git
 $ pip install yfinance
 $ pip install pandas seaborn
 $ pip install tabulate
+
+May need these (install 1 by 1 and try run the command e.g.: python  bss_1.py CPNG 3 10 
+$ sudo apt-get install libblas-dev
+$ sudo apt-get install libhdf5-dev
+$ sudo apt-get install libhdf5-serial-dev
+$ sudo apt-get install libatlas-base-dev
 ```
 
 To start
