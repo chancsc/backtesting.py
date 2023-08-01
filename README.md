@@ -18,6 +18,8 @@ $ gitclone https://github.com/chancsc/backtesting.py.git
 $ pip install yfinance
 $ pip install pandas seaborn
 $ pip install tabulate
+$ pip install bokeh
+
 
 May need these (install 1 by 1 and try run the command e.g.: python  bss_1.py CPNG 3 10 
 $ sudo apt-get install libblas-dev
