@@ -831,6 +831,8 @@ class _Broker:
         data = self._data
         open, high, low = data.Open[-1], data.High[-1], data.Low[-1]
         prev_close = data.Close[-2]
+        curr_close = data.Close[-1]
+        # print("curr_close = ", curr_close)
         reprocess_orders = False
 
         # Process orders
@@ -865,15 +867,19 @@ class _Broker:
                     continue
 
                 # stop_price, if set, was hit within this bar
-                price = (min(stop_price or open, order.limit)
-                         if order.is_long else
-                         max(stop_price or open, order.limit))
-            else:
+                # price = (min(stop_price or open, order.limit)
+                #          if order.is_long else
+                #          max(stop_price or open, order.limit))
+
+            # else:
                 # Market-if-touched / market order
-                price = prev_close if self._trade_on_close else open
-                price = (max(price, stop_price or -np.inf)
-                         if order.is_long else
-                         min(price, stop_price or np.inf))
+                # price = prev_close if self._trade_on_close else open
+                # price = (max(price, stop_price or -np.inf)
+                #          if order.is_long else
+                #          min(price, stop_price or np.inf))
+
+            price = curr_close
+            #print("curr_close price = ", curr_close)
 
             # Determine entry/exit bar index
             is_market_order = not order.limit and not stop_price
