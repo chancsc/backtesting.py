@@ -246,14 +246,57 @@ def plot(*, results: pd.Series,
 
     # to print out the data in console
     print("Stock: ", filename)
+
+    telegram = False
+    pl_values = ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"])
+
+
+    positive_streak = 0
+    negative_streak = 0
+
+    # send telegram is continue to be lucky / unluck for x times
+    for pl in pl_values[::-1]:
+        if positive_streak >= 5 or negative_streak >= 5:
+            telegram = True
+            break
+        if pl > 0:
+            if negative_streak > 0:
+                break
+            positive_streak += 1
+            negative_streak = 0
+        else:
+            if positive_streak > 0:
+                break
+            positive_streak = 0
+            negative_streak += 1
+
+    # print("positive_streak: ", positive_streak)
+    # print("negative_streak: ", negative_streak)
+
+    # if P/L value > y% also send telegram
+    if (pl_values.abs() > 80).any():
+        telegram = True
+
+
     data = {
+        "S. No.": range(1, len(trades) + 1),
         "Size": trades.get("Size", ""),
         "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
         "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
         "Entry Price": trades.get("EntryPrice", ""),
         "Exit Price": trades.get("ExitPrice", ""),
-        "P/L": ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"]).apply(lambda x: "{:.2f}".format(x))
+        "P/L": pl_values.apply(lambda x: "{:.2f}".format(x))
     }
+
+    # data = {
+    #     "S. No.": range(1, len(trades) + 1),
+    #     "Size": trades.get("Size", ""),
+    #     "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
+    #     "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
+    #     "Entry Price": trades.get("EntryPrice", ""),
+    #     "Exit Price": trades.get("ExitPrice", ""),
+    #     "P/L": ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"]).apply(lambda x: "{:.2f}".format(x))
+    # }
 
     # Format the float values to two decimal places (if applicable)
     for key, value in data.items():
@@ -674,31 +717,35 @@ return this.labels[index] || "";
 
     # start telegram, continue from ~ line 264
     # Check if the last entry time equals the exit time
-    if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
+    # print("Telegram: ", telegram)
+    # print("pl_value:", pl_value)
+    a= 1
+    if telegram and pl_value > 80:
+        #if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
+        if a == a:
+            # Export the table to a file
+            # print("Export the table to a file")
+            with open(f"{filename}.txt", 'w') as file:
+                file.write(tabulate(data, headers='keys', tablefmt='grid'))
 
-        # Export the table to a file
-        # print("Export the table to a file")
-        with open(f"{filename}.txt", 'w') as file:
-            file.write(tabulate(data, headers='keys', tablefmt='grid'))
+            # print("Sending Telegram message...")
 
-        # print("Sending Telegram message...")
+            # Load the configuration from the JSON file
+            with open("config.json", "r") as config_file:
+                config = json.load(config_file)
 
-        # Load the configuration from the JSON file
-        with open("config.json", "r") as config_file:
-            config = json.load(config_file)
+            bot_token = config["bot_token"]
+            chat_id = config["chat_id"]
+            # ttext = "Trading opportunity alert"
+            ttext = ("History P/L: {:.2f}%".format(pl_value))
+            url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
 
-        bot_token = config["bot_token"]
-        chat_id = config["chat_id"]
-        # ttext = "Trading opportunity alert"
-        ttext = ("History P/L: {:.2f}".format(pl_value))
-        url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
+            with open(f"{filename}.txt", 'rb') as file:
+                files = {"document": file}
+                data = {"chat_id": chat_id, "caption": ttext}
+                response = requests.post(url, files=files, data=data)
 
-        with open(f"{filename}.txt", 'rb') as file:
-            files = {"document": file}
-            data = {"chat_id": chat_id, "caption": ttext}
-            response = requests.post(url, files=files, data=data)
-
-    # # end telegram
+    ## end telegram
 
 
     ohlc_bars = _plot_ohlc()
