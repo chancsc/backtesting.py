@@ -253,29 +253,37 @@ def plot(*, results: pd.Series,
 
     positive_streak = 0
     negative_streak = 0
+    streak = 0
 
-    # send telegram is continue to be lucky / unluck for x times
+    positive_streak = 0
+    negative_streak = 0
+    max_streak = 0
+
+    # send telegram if continue to be lucky/unlucky for x times
     for pl in pl_values[::-1]:
-        if positive_streak >= 5 or negative_streak >= 5:
-            telegram = True
-            break
         if pl > 0:
             if negative_streak > 0:
                 break
             positive_streak += 1
             negative_streak = 0
+            streak = positive_streak
         else:
             if positive_streak > 0:
                 break
             positive_streak = 0
             negative_streak += 1
+            streak = negative_streak
 
-    # print("positive_streak: ", positive_streak)
-    # print("negative_streak: ", negative_streak)
+        max_streak = max(max_streak, streak)
+
+    print("Max Streak: ", max_streak)
+
+    if max_streak > 5:
+        telegram = True
 
     # if P/L value > y% also send telegram
-    if (pl_values.abs() > 80).any():
-        telegram = True
+    # if (pl_values.abs() > 90).any():
+    #     telegram = True
 
 
     data = {
@@ -719,8 +727,8 @@ return this.labels[index] || "";
     # Check if the last entry time equals the exit time
     # print("Telegram: ", telegram)
     # print("pl_value:", pl_value)
-    a= 1
-    if telegram and pl_value > 80:
+    a = 1 #init
+    if telegram or abs(pl_value) > 90:
         #if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
         if a == a:
             # Export the table to a file
@@ -736,10 +744,8 @@ return this.labels[index] || "";
 
             bot_token = config["bot_token"]
             chat_id = config["chat_id"]
-            # ttext = "Trading opportunity alert"
-            ttext = ("History P/L: {:.2f}%".format(pl_value))
+            ttext = ("History P/L: {:.2f}%\nStreak: {}".format(pl_value, max_streak))
             url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
-
             with open(f"{filename}.txt", 'rb') as file:
                 files = {"document": file}
                 data = {"chat_id": chat_id, "caption": ttext}
