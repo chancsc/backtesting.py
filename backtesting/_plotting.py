@@ -167,7 +167,7 @@ def _maybe_resample_data(resample_rule, df, indicators, equity_data, trades):
 def plot(*, results: pd.Series,
          df: pd.DataFrame,
          indicators: List[_Indicator],
-         filename='', plot_width=None,
+         filename='', stockname='', telegram=False, plot_width=None,
          plot_equity=True, plot_return=False, plot_pl=True,
          plot_volume=True, plot_drawdown=False, plot_trades=True,
          smooth_equity=False, relative_equity=True,
@@ -247,9 +247,8 @@ def plot(*, results: pd.Series,
     # to print out the data in console
     print("Stock: ", filename)
 
-    telegram = False
+    # telegram = False
     pl_values = ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"])
-
 
     positive_streak = 0
     negative_streak = 0
@@ -261,30 +260,30 @@ def plot(*, results: pd.Series,
 
     # send telegram if continue to be lucky/unlucky for x times
     for pl in pl_values[::-1]:
-        if pl > 0:
-            if negative_streak > 0:
-                break
-            positive_streak += 1
-            negative_streak = 0
-            streak = positive_streak
-        else:
-            if positive_streak > 0:
-                break
-            positive_streak = 0
-            negative_streak += 1
-            streak = negative_streak
+        if pl != 0:  # Skip if value is zero
+            if pl > 0:
+                if negative_streak > 0:
+                    break
+                positive_streak += 1
+                negative_streak = 0
+                streak = positive_streak
+            else:
+                if positive_streak > 0:
+                    break
+                positive_streak = 0
+                negative_streak += 1
+                streak = negative_streak
 
-        max_streak = max(max_streak, streak)
+            max_streak = max(max_streak, streak)
 
     print("Max Streak: ", max_streak)
 
-    if max_streak > 5:
+    if max_streak >= 8:
         telegram = True
 
     # if P/L value > y% also send telegram
     # if (pl_values.abs() > 90).any():
     #     telegram = True
-
 
     data = {
         "S. No.": range(1, len(trades) + 1),
@@ -293,23 +292,17 @@ def plot(*, results: pd.Series,
         "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
         "Entry Price": trades.get("EntryPrice", ""),
         "Exit Price": trades.get("ExitPrice", ""),
-        "P/L": pl_values.apply(lambda x: "{:.2f}".format(x))
-    }
-
-    # data = {
-    #     "S. No.": range(1, len(trades) + 1),
-    #     "Size": trades.get("Size", ""),
-    #     "Entry Time": trades.get("EntryTime", "").dt.date if isinstance(trades.get("EntryTime"), pd.Series) else "",
-    #     "Exit Time": trades.get("ExitTime", "").dt.date if isinstance(trades.get("ExitTime"), pd.Series) else "",
-    #     "Entry Price": trades.get("EntryPrice", ""),
-    #     "Exit Price": trades.get("ExitPrice", ""),
-    #     "P/L": ((trades["ExitPrice"] - trades["EntryPrice"]) * trades["Size"]).apply(lambda x: "{:.2f}".format(x))
-    # }
+        "P/L": pl_values.apply(lambda x: "{:.2f}".format(x) if x != 0 else "0")    }
 
     # Format the float values to two decimal places (if applicable)
     for key, value in data.items():
         if isinstance(value, float):
             data[key] = "{:.2f}".format(value)
+
+    # Set entryFlag if EntryTime and ExitTime fall on the same day for the last value
+    last_entry_time = data["Entry Time"].iat[-1]
+    last_exit_time = data["Exit Time"].iat[-1]
+    entryFlag = last_entry_time == last_exit_time
 
     if showTable:
         print(tabulate(data, headers='keys', tablefmt='grid'))
@@ -744,7 +737,10 @@ return this.labels[index] || "";
 
             bot_token = config["bot_token"]
             chat_id = config["chat_id"]
-            ttext = ("History P/L: {:.2f}%\nStreak: {}".format(pl_value, max_streak))
+            ttext = ("Stock Name: {}\nHistory P/L: {:.2f}%\nStreak: {}".format(stockname, pl_value, max_streak))
+            if entryFlag:
+                ttext += "\nEntry Time!!"
+
             url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
             with open(f"{filename}.txt", 'rb') as file:
                 files = {"document": file}
