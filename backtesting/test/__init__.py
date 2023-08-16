@@ -7,7 +7,7 @@ def _read_file(stock_symbol):
 
     filename = f"{stock_symbol}.csv"
     return pd.read_csv(join(dirname(__file__), filename),
-                       index_col=0, parse_dates=True, infer_datetime_format=True)
+                       index_col=0, parse_dates=True)
 
 
 # Example usage: Pass the stock symbol when calling the function
