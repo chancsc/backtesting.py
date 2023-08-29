@@ -173,7 +173,7 @@ def plot(*, results: pd.Series,
          smooth_equity=False, relative_equity=True,
          superimpose=True, resample=True,
          reverse_indicators=True,
-         show_legend=True, open_browser=True, showTable=False):
+         show_legend=True, open_browser=True, showTable=False, mMode=False):
     """
     Like much of GUI code everywhere, this is a mess.
     """
@@ -720,32 +720,38 @@ return this.labels[index] || "";
     # Check if the last entry time equals the exit time
     # print("Telegram: ", telegram)
     # print("pl_value:", pl_value)
+
     a = 1 #init
     if telegram or abs(pl_value) > 90:
-        #if not data["Entry Time"].empty and data["Entry Time"].iloc[-1] == data["Exit Time"].iloc[-1]:
-        if a == a:
-            # Export the table to a file
-            # print("Export the table to a file")
-            with open(f"{filename}.txt", 'w') as file:
-                file.write(tabulate(data, headers='keys', tablefmt='grid'))
+        # Export the table to a file
+        with open(f"{filename}.txt", 'w') as file:
+            file.write(tabulate(data, headers='keys', tablefmt='grid'))
 
-            # print("Sending Telegram message...")
+        print("mModeB = ", mMode)
 
-            # Load the configuration from the JSON file
-            with open("config.json", "r") as config_file:
-                config = json.load(config_file)
+        if entryFlag or mMode:
+            config_file_name = "config_tuxn.json"
+        else:
+            config_file_name = "config.json"
 
-            bot_token = config["bot_token"]
-            chat_id = config["chat_id"]
-            ttext = ("Stock Name: {}\nHistory P/L: {:.2f}%\nStreak: {}".format(stockname, pl_value, max_streak))
-            if entryFlag:
-                ttext += "\nEntry Time!!"
 
-            url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
-            with open(f"{filename}.txt", 'rb') as file:
-                files = {"document": file}
-                data = {"chat_id": chat_id, "caption": ttext}
-                response = requests.post(url, files=files, data=data)
+
+        # Load the configuration from the JSON file
+        with open(config_file_name, "r") as config_file:
+            config = json.load(config_file)
+
+        bot_token = config["bot_token"]
+        chat_id = config["chat_id"]
+
+        ttext = ("Stock Name: {}\nHistory P/L: {:.2f}%\nStreak: {}".format(stockname, pl_value, max_streak))
+        if entryFlag:
+            ttext += "\nEntry Time!!"
+
+        url = "https://api.telegram.org/bot{}/sendDocument".format(bot_token)
+        with open(f"{filename}.txt", 'rb') as file:
+            files = {"document": file}
+            data = {"chat_id": chat_id, "caption": ttext}
+            response = requests.post(url, files=files, data=data)
 
     ## end telegram
 
